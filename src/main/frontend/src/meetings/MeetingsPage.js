@@ -40,6 +40,40 @@ export default function MeetingsPage({ username }) {
     }
   }
 
+  async function handleEnroll(meeting) {
+    await fetch("/api/participants", {
+      method: "POST",
+      body: JSON.stringify({ login: username }),
+      headers: { "Content-Type": "application/json" },
+    });
+    const updatedMeeting = {
+      ...meeting,
+      participants: [...meeting.participants, { login: username }],
+    };
+    const response = await fetch(`/api/meetings/${meeting.id}`, {
+      method: "PUT",
+      body: JSON.stringify(updatedMeeting),
+      headers: { "Content-Type": "application/json" },
+    });
+    if (response.ok) {
+      await fetchMeetings();
+    }
+  }
+
+  async function handleUnenroll(meeting) {
+    const response = await fetch(`/api/meetings/${meeting.id}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        ...meeting,
+        participants: meeting.participants.filter((p) => p.login !== username),
+      }),
+      headers: { "Content-Type": "application/json" },
+    });
+    if (response.ok) {
+      await fetchMeetings();
+    }
+  }
+
   return (
     <div>
       <h2>Zajęcia ({meetings.length})</h2>
@@ -55,6 +89,8 @@ export default function MeetingsPage({ username }) {
           meetings={meetings}
           username={username}
           onDelete={handleDeleteMeeting}
+          onEnroll={handleEnroll}
+          onUnenroll={handleUnenroll}
         />
       )}
     </div>

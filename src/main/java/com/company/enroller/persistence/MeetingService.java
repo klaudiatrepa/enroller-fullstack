@@ -57,7 +57,10 @@ public class MeetingService {
     }
 
     public void update(Meeting meeting) {
-        Transaction transaction = this.session.beginTransaction();
+        Transaction transaction = this.session.getTransaction();
+        if (!transaction.isActive()) {
+            transaction = this.session.beginTransaction();
+        }
         this.session.merge(meeting);
         transaction.commit();
     }
